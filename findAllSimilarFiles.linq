@@ -15,7 +15,7 @@ void Main()
 	using (FileStream fs = File.Create(logpath))
 	{
 		string[] dir = new string[1];
-		dir[0] = @"C:\Dev\Scripts";
+		dir[0] = @"J:\J11251_GAR1_PRELIMINARY_DESIGN_-GAR_(Water_Corporation)\Drawings and Documents\E80 Docs";
 
 		foreach (var dr in dir)
 		{
@@ -67,9 +67,12 @@ public static void ProcessFile(string path, string logPath, FileStream fs)
 {
 	//Create the file.
 	
-	AddText(fs, path);
-	AddText(fs, "\r\n");
-	Console.WriteLine("Processed file '{0}'.", path);
+	if(path.Contains("11251-QUO") && !path.Contains("Itemised Breakdown"))
+	{
+		AddText(fs, path);
+		AddText(fs, "\r\n");
+		Console.WriteLine("Processed file '{0}'.", path);
+	}
 }
 
 private static void AddText(FileStream fs, string value)
@@ -124,5 +127,3 @@ static void WalkDirectoryTree(System.IO.DirectoryInfo root)
 		}
 	}
 }
-
-
