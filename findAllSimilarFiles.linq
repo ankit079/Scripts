@@ -15,7 +15,6 @@ void Main()
 	using (FileStream fs = File.Create(logpath))
 	{
 		string[] dir = new string[1];
-		dir[0] = @"J:\J11251_GAR1_PRELIMINARY_DESIGN_-GAR_(Water_Corporation)\Drawings and Documents\E80 Docs";
 
 		foreach (var dr in dir)
 		{
