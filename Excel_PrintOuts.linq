@@ -9,6 +9,7 @@
   <Namespace>ExcelDataReader.Log</Namespace>
   <Namespace>ExcelDataReader.Log.Logger</Namespace>
   <Namespace>Microsoft.Office.Interop.Excel</Namespace>
+  <Namespace>System</Namespace>
   <Namespace>System.ComponentModel.DataAnnotations</Namespace>
   <Namespace>System.ComponentModel.DataAnnotations.Schema</Namespace>
   <Namespace>System.Data.Entity</Namespace>
@@ -46,22 +47,22 @@
   <Namespace>System.Data.Entity.SqlServer.Utilities</Namespace>
   <Namespace>System.Data.Entity.Utilities</Namespace>
   <Namespace>System.Data.Entity.Validation</Namespace>
-  <Namespace>System.IO.Compression</Namespace>
-  <Namespace>System</Namespace>
-  <Namespace>System.Runtime.InteropServices</Namespace>
   <Namespace>System.Globalization</Namespace>
+  <Namespace>System.IO.Compression</Namespace>
+  <Namespace>System.Runtime.InteropServices</Namespace>
 </Query>
 
 void Main()
 {
 	var ExcelFormater = new ExcelFormater();
-	string path = @"J:\J11251_GAR1_PRELIMINARY_DESIGN_-GAR_(Water_Corporation)\Drawings and Documents\E80 Docs\#38 Barbalin Rock Tank\11251-QUO-038.xlsx";
+	string path = @"J:\J11251_GAR1_PRELIMINARY_DESIGN_-GAR_(Water_Corporation)\Drawings and Documents\E80 Docs\#105 Townsend St WTP\11251-QUO-105A.xlsx";
 //	string[] filePaths = System.IO.File.ReadAllLines(@"C:\temp\filepath.txt");
 //	foreach (string path in filePaths)
 //	{
 		ExcelFormater.FormatExcelDoc(path);
 		Console.Write("Processed the filepath: {0}", path);
 //	}
+
 }
 
 // Class that stores Application
@@ -88,13 +89,13 @@ public class ExcelFormater
 
 			// Pass the workbook to a separate function that formats the workbook
 
-			FormatExcelSheet(fileName);
+		//	FormatExcelSheet(fileName);
 
 			// Save the workbook
 
 			_excelApp.DisplayAlerts = false;
-			workBook.SaveAs(fileName);
-			//printOut();
+			//workBook.SaveAs(fileName);
+			printOut();
 			workBook.Close(true, fileName, null);
 			_excelApp.Quit();
 
@@ -108,7 +109,7 @@ public class ExcelFormater
 		finally
 		{
 			KillExcel();
-			Console.Write("Excel App is killed" + "\r\n");
+			Console.Write("Excel Application is closed" + "\r\n");
 			System.Threading.Thread.Sleep(100);
 		}
 	}
@@ -148,6 +149,7 @@ public class ExcelFormater
 			}
 		}
 	}
+	
 	private void FormatExcelSheet(string fileName)
 	{
 		var worksheetNames = getWorksheetNames();
@@ -155,7 +157,8 @@ public class ExcelFormater
 		deleteExistingRevisionSheet(worksheetNames);
 
 		var workSheet = CreateRevisionSheet();
-		FormatRevisionSheet(workSheet);
+		FormatRevisionSheet(workSheet);		
+		AddStudyReportSheetRevision();
 		Console.Write("The new Revision Sheet has been generated" + "\r\n");
 	}
 
@@ -213,11 +216,9 @@ public class ExcelFormater
 		//((Microsoft.Office.Interop.Excel.Range)revisionSheet.Rows[1]).AutoFit();
 		revisionSheet.Columns.AutoFit();
 		revisionSheet.Rows.AutoFit();			
-		
+		//AddStudyReportSheetRevision();
 		AddCostingSheetRevision();
-		AddStudyReportSheetRevision();
-		Console.Write("Formating Adjusted" + "\r\n");
-		
+		Console.Write("Formating Adjusted" + "\r\n");	
 		
 	}
 
@@ -270,14 +271,16 @@ public class ExcelFormater
 		foreach (Worksheet sheet in workBook.Sheets)
 		{
 			if (sheet.Name == "Study Report")
-			{			
-				Range line = (Range)sheet.Rows[2];
-				line.Insert();
-				Range rng = sheet.Range["C2"];
-				rng.Formula = "=CONCATENATE(\"REV\",\" \",Revision!C2)";
-				rng.Font.Bold = true;
+			{
+				sheet.Activate();
+				//Range rng = sheet.Range["C1"];
+				//rng.Formula = "=CONCATENATE(\"REV\",\" \",Revision!C2)";
+				var line = (Range)sheet.Rows[2];
+				line.Insert();				
 				sheet.Cells[2, "B"] = "Revision History";
-				rng.EntireRow.Font.Bold = true;
+				sheet.Range["C2"].Formula = "=CONCATENATE(\"REV\", \" \", Revision!C2)";
+				var currentCell = (Range)this._excelApp.ActiveCell[2,3];
+				currentCell.EntireRow.Font.Bold = true;
 			}
 		}
 	}
@@ -286,14 +289,16 @@ public class ExcelFormater
 	{
 		foreach (Worksheet sheet in workBook.Sheets)
 		{
-			if ((sheet.Name == "Study Report") || (sheet.Name == "Final Costing") || (sheet.Name == "Revision"))
+			//if ((sheet.Name == "Study Report") || (sheet.Name == "Final Costing") || (sheet.Name == "Revision"))
+			if(sheet.Name != "Rates")
 			{
 				sheet.Activate();
+				Console.Write("The sheet {0} is about to be printed\n", sheet.Name);
 				//_excelApp.ActivePrinter = "Adobe PDF";
 				((Worksheet)_excelApp.ActiveSheet).PrintOut();
 				//sheet.Application.ActivePrinter = "Adobe PDF";
 				//sheet.Activate();
-				Console.Write("The sheet {0} has been printed", sheet.Name);
+				Console.Write("The sheet {0} has been printed\n", sheet.Name);
 			}
 		}
 	}
