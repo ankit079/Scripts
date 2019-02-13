@@ -55,7 +55,7 @@
 void Main()
 {
 	var ExcelFormater = new ExcelFormater();
-	string path = @"J:\J11251_GAR1_PRELIMINARY_DESIGN_-GAR_(Water_Corporation)\Drawings and Documents\E80 Docs\#105 Townsend St WTP\11251-QUO-105A.xlsx";
+	string path = @"J:\J11251_GAR1_PRELIMINARY_DESIGN_-GAR_(Water_Corporation)\Drawings and Documents\E80 Docs\#47 George Rd Tank East\11251-QUO-047.xlsx";
 //	string[] filePaths = System.IO.File.ReadAllLines(@"C:\temp\filepath.txt");
 //	foreach (string path in filePaths)
 //	{
