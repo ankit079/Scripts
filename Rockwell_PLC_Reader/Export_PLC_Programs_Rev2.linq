@@ -32,14 +32,15 @@ void Main()
 		select c
 			);
 			foreach (var routine in routines)
-			{
-				if (routine.FirstAttribute.Value == "PI167100")
+			{				
+				var deserializedObject = Deserializer.FromXElement<Routine>(routine);
+				if(deserializedObject.FBDContent != null)
 				{
-					routine.Dump();
-					var deserializedObject = Deserializer.FromXElement<Routine>(routine);
-					deserializedObject.Dump();
-					//printSlotData(deserializedObject);
-				}
+					if (deserializedObject.FBDContent.Sheet.IRef != null)
+					{
+						printSlotData(deserializedObject);
+					}
+				}			
 			}
 		}
 	}
@@ -47,16 +48,24 @@ void Main()
 
 private void printSlotData(Routine routine)
 {
-	Console.WriteLine(routine.Description);
+	if (routine.Description != null)
+	{
+			Console.WriteLine(routine.Description);
+	}
+
 	var iREF = routine.FBDContent.Sheet.IRef;
 	foreach(var data in iREF)
 	{
-		if(data.Operand.Contains("CP"))
+		if(data.Operand != null)
 		{
-			Console.WriteLine(data.Operand);
+			if (data.Operand.Contains("CP") || data.Operand.Contains("PI") || data.Operand.Contains("TI"))
+			{
+				Console.WriteLine(data.Operand);
+			}
 		}
-	}
+	}	
 	
+	Console.WriteLine("----------------------------------------");
 }
 
 
