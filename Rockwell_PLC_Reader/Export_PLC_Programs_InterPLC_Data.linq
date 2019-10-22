@@ -11,7 +11,7 @@
 
 void Main()
 {
-	string filename = @"LoadXML\PLC File\CRYS12B_AZ_20191010.L5X";
+	string filename = @"LoadXML\PLC File\CRYS11A_BHG_20191021.L5X";
 	string xmlFile = FilePathFromDesktop(filename);
 	XElement config = XElement.Load(xmlFile);
 
