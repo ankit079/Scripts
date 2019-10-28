@@ -33,6 +33,9 @@ void Main()
 			);
 			foreach (var routine in routines)
 			{				
+				Console.WriteLine("---------------------------------------------------");
+				Console.WriteLine("Processed routine {0}",routine.FirstAttribute.Value);
+				Console.WriteLine("---------------------------------------------------");
 				var deserializedObject = Deserializer.FromXElement<Routine>(routine);
 				var rung = deserializedObject.RLLContent.Rung;
 				
