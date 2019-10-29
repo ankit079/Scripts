@@ -17,6 +17,11 @@ void Main()
 	var difference2 = RetrievePreviousFileData().Except(RetrieveLatestFileData()).ToList();
 	Console.WriteLine("Comparing the latest file with the previous file for difference");
 	difference1.Dump();
+	if(difference1 != null)
+	{
+		// Do Something with IRef ID to find the corelation
+		
+	}
 	Console.WriteLine("Comparing the previous file with the latest file for difference");
 	difference2.Dump();
 }
@@ -49,6 +54,7 @@ public List<String> RetrieveLatestFileData()
 			{
 				if (routine.FirstAttribute.Value == "PP1500002ABVSD_Duty")
 				{
+					routine.Dump();
 					var deserializedObject = Deserializer.FromXElement<Routine>(routine);
 
 					// Retrieve IREF data

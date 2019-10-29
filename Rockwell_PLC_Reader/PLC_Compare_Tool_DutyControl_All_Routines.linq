@@ -15,9 +15,10 @@ void Main()
 	
 	var difference1 = RetrieveLatestFileData().Except(RetrievePreviousFileData()).ToList();
 	var difference2 = RetrievePreviousFileData().Except(RetrieveLatestFileData()).ToList();
-	Console.WriteLine("Comparing the latest file with the previous file for difference");
+	Console.WriteLine("-----------------------------------------------------------------");
+	Console.WriteLine("Items added to the latest file");
 	difference1.Dump();
-	Console.WriteLine("Comparing the previous file with the latest file for difference");
+	Console.WriteLine("Items deleted from the previous file");
 	difference2.Dump();
 }
 

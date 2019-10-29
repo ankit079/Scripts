@@ -6,12 +6,15 @@
     <Database>master</Database>
     <ShowServer>true</ShowServer>
   </Connection>
+  <Reference>&lt;RuntimeDirectory&gt;\System.Collections.dll</Reference>
   <Namespace>System.Xml.Serialization</Namespace>
 </Query>
 
 void Main()
 {	
-	// Compare Logic between two files
+	// Compares sequence of data collection of two separate xml files
+	
+	// Refer to https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable.except?view=netframework-4.8 
 	
 	var difference1 = RetrieveLatestFileData().Except(RetrievePreviousFileData()).ToList();
 	var difference2 = RetrievePreviousFileData().Except(RetrieveLatestFileData()).ToList();
@@ -22,100 +25,16 @@ void Main()
 }
 
 public List<String> RetrieveLatestFileData()
-{	var latestData = new List<String>();	
-	// Latest File Data
+{	// Retrieve Latest File Data
 	string filename = @"LoadXML\PLC_Compare_Tool\HYDR1A_SB_20191028.L5X";
-	string xmlFile = FilePathFromDesktop(filename);
-	XElement config = XElement.Load(xmlFile);
-
-	var result = (
-			from c in config.DescendantNodes().OfType<XElement>()
-			where c.Name == "Program"
-			select c
-				);
-
-	foreach (XElement e in result)
-	{
-//		if (e.FirstAttribute.Value == "DutyControl")
-//		{
-			var selectedProgram = e;
-			var routines = (
-		from c in selectedProgram.DescendantNodes().OfType<XElement>()
-		where c.Name == "Routine"
-		select c
-			);
-
-			foreach (var routine in routines)
-			{
-				Console.WriteLine("Completed routine checks for {0}",routine.FirstAttribute.Value);
-			if (routine.Attribute("Type").Value == "FBD")
-				{
-					var deserializedObject = Deserializer.FromXElement<Routine>(routine);
-
-					// Retrieve IREF data
-					foreach (var iref in deserializedObject.FBDContent.Sheet.IRef)
-					{
-						latestData.Add(iref.Operand);
-					}
-					// Retrieve Block data
-					foreach (var block in deserializedObject.FBDContent.Sheet.Block)
-					{
-						latestData.Add(block.Operand);
-					}
-				}
-//			}
-		}
-		
-	}
-	return latestData;
+	return RetrieveData(filename);
 }
 
 public List<String> RetrievePreviousFileData()
 {
-	var previousData = new List<String>();
-	// Latest File Data
+	// Retrieve Previous File Data
 	string filename = @"LoadXML\PLC_Compare_Tool\HYDR1A_BHG_20191003.L5X";
-	string xmlFile = FilePathFromDesktop(filename);
-	XElement config = XElement.Load(xmlFile);
-
-	var result = (
-			from c in config.DescendantNodes().OfType<XElement>()
-			where c.Name == "Program"
-			select c
-				);
-
-	foreach (XElement e in result)
-	{
-//		if (e.FirstAttribute.Value == "DutyControl")
-//		{
-			var selectedProgram = e;
-			var routines = (
-		from c in selectedProgram.DescendantNodes().OfType<XElement>()
-		where c.Name == "Routine"
-		select c
-			);
-
-			foreach (var routine in routines)
-			{
-			if (routine.Attribute("Type").Value == "FBD")
-				{
-					var deserializedObject = Deserializer.FromXElement<Routine>(routine);
-
-					// Retrieve IREF data
-					foreach (var iref in deserializedObject.FBDContent.Sheet.IRef)
-					{
-						previousData.Add(iref.Operand);
-					}
-					// Retrieve Block data
-					foreach (var block in deserializedObject.FBDContent.Sheet.Block)
-					{
-						previousData.Add(block.Operand);
-					}
-				}
-//			}
-		}
-	}
-	return previousData;
+	return RetrieveData(filename);
 }
 
 // Read from desktop a perticular file
@@ -124,6 +43,76 @@ private string FilePathFromDesktop(string fileName)
 	string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 	string fullName = System.IO.Path.Combine(desktopPath, fileName);
 	return fullName;
+}
+
+private List<string> RetrieveData(string filename)
+{
+	var retrieveData = new List<string>();
+	// Latest File Data
+	//string filename = @"LoadXML\PLC_Compare_Tool\HYDR1A_SB_20191028.L5X";
+	string xmlFile = FilePathFromDesktop(filename);
+	XElement config = XElement.Load(xmlFile);
+
+	var result = (
+			from c in config.DescendantNodes().OfType<XElement>()
+			where c.Name == "Program"
+			select c
+				);
+
+	foreach (XElement e in result)
+	{
+		//		if (e.FirstAttribute.Value == "DutyControl")
+		//		{
+		var selectedProgram = e;
+		var routines = (
+	from c in selectedProgram.DescendantNodes().OfType<XElement>()
+	where c.Name == "Routine"
+	select c
+		);
+
+		foreach (var routine in routines)
+		{
+			Console.WriteLine("Completed routine checks for {0}", routine.FirstAttribute.Value);
+			if (routine.Attribute("Type").Value == "FBD")
+			{
+				var deserializedObject = Deserializer.FromXElement<Routine>(routine);
+
+				// Retrieve IREF data
+				foreach (var iref in deserializedObject.FBDContent.Sheet.IRef)
+				{
+					retrieveData.Add(iref.Operand);
+				}
+				// Retrieve Block data
+				foreach (var block in deserializedObject.FBDContent.Sheet.Block)
+				{
+					retrieveData.Add(block.Operand);
+				}
+				
+				foreach(var icon in deserializedObject.FBDContent.Sheet.ICon)
+				{
+					retrieveData.Add(icon.Name);
+				}
+
+				foreach (var ocon in deserializedObject.FBDContent.Sheet.OCon)
+				{
+					retrieveData.Add(ocon.Name);
+				}
+
+				foreach (var aoi in deserializedObject.FBDContent.Sheet.AddOnInstruction)
+				{
+					retrieveData.Add(aoi.Operand);
+				}
+
+				foreach (var wire in deserializedObject.FBDContent.Sheet.Wire)
+				{
+					retrieveData.Add(wire.ToParam);
+				}
+			}
+			//			}
+		}
+
+	}
+	return retrieveData;
 }
 
 // https://stackoverflow.com/questions/8373552/serialize-an-object-to-xelement-and-deserialize-it-in-memory 
