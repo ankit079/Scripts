@@ -11,30 +11,66 @@
 </Query>
 
 void Main()
-{	
-	// Compares sequence of data collection of two separate xml files
-	
-	// Refer to https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable.except?view=netframework-4.8 
-	
-	var difference1 = RetrieveLatestFileData().Except(RetrievePreviousFileData()).ToList();
-	var difference2 = RetrievePreviousFileData().Except(RetrieveLatestFileData()).ToList();
-	Console.WriteLine("Items added to the latest file");
-	difference1.Dump();
-	Console.WriteLine("Items deleted from the previous file");
-	difference2.Dump();
-}
-
-public List<String> RetrieveLatestFileData()
-{	// Retrieve Latest File Data
-	string filename = @"LoadXML\PLC_Compare_Tool\HYDR1A_SB_20191028.L5X";
-	return RetrieveData(filename);
-}
-
-public List<String> RetrievePreviousFileData()
 {
-	// Retrieve Previous File Data
-	string filename = @"LoadXML\PLC_Compare_Tool\HYDR1A_BHG_20191003.L5X";
-	return RetrieveData(filename);
+	string logpath = @"c:\temp\filepath.txt";
+	List<FilePath> proj = new List<FilePath>();
+
+	if (File.Exists(logpath))
+	{
+		File.Delete(logpath);
+	}
+
+	using (FileStream fs = File.Create(logpath))
+	{
+		string[] dir = new string[1];
+		dir[0] = @"U:\Ankit\Logic";
+		foreach (var dr in dir)
+		{
+			if (Directory.Exists(dr))
+			{
+				ProcessDirectory(dr, fs, proj);
+			}
+		}
+	}
+}
+
+public void ProcessDirectory(string targetDirectory, FileStream fs, List<FilePath> proj)
+{
+	System.IO.DriveInfo di = new System.IO.DriveInfo(targetDirectory);
+	try
+	{
+		var retrieveData = new List<string>();
+		// Process the list of files found in the directory.
+		string[] fileEntries = Directory.GetFiles(targetDirectory, "*.L5X*");
+		
+		foreach (string fileName in fileEntries)
+		{
+			Console.WriteLine(fileName);
+			RetrieveData(fileName, retrieveData);	
+		}
+
+		// Recurse into subdirectories of this directory.
+		string[] subdirectoryEntries = Directory.GetDirectories(targetDirectory);
+		foreach (string subdirectory in subdirectoryEntries)
+			ProcessDirectory(subdirectory, fs, proj);
+
+		//System.IO.DirectoryInfo dir = di.RootDirectory;
+		//WalkDirectoryTree(dir);
+		
+		foreach(var data in retrieveData)
+		{
+			if(data.Contains("_Data."))
+			{
+				Console.WriteLine(data);
+			}
+		}
+		//retrieveData.Dump();
+	}
+	catch (Exception ex)
+	{
+		Console.Write(ex.Message);
+		Console.Write(ex.StackTrace);
+	}
 }
 
 // Read from desktop a perticular file
@@ -45,9 +81,9 @@ private string FilePathFromDesktop(string fileName)
 	return fullName;
 }
 
-private List<string> RetrieveData(string filename)
+private void RetrieveData(string filename, List<String> retrieveData)
 {
-	var retrieveData = new List<string>();
+	//var retrieveData = new List<string>();
 	// Latest File Data
 	//string filename = @"LoadXML\PLC_Compare_Tool\HYDR1A_SB_20191028.L5X";
 	string xmlFile = FilePathFromDesktop(filename);
@@ -72,47 +108,51 @@ private List<string> RetrieveData(string filename)
 
 		foreach (var routine in routines)
 		{
-			Console.WriteLine("Completed routine checks for {0}", routine.FirstAttribute.Value);
+			//Console.WriteLine("Completed routine checks for {0}", routine.FirstAttribute.Value);
 			if (routine.Attribute("Type").Value == "FBD")
 			{
 				var deserializedObject = Deserializer.FromXElement<Routine>(routine);
 
 				// Retrieve IREF data
-				foreach (var iref in deserializedObject.FBDContent.Sheet.IRef)
-				{
-					retrieveData.Add(iref.Operand);
-				}
-				// Retrieve Block data
-				foreach (var block in deserializedObject.FBDContent.Sheet.Block)
-				{
-					retrieveData.Add(block.Operand);
-				}
-				
-				foreach(var icon in deserializedObject.FBDContent.Sheet.ICon)
-				{
-					retrieveData.Add(icon.Name);
-				}
+//				foreach (var iref in deserializedObject.FBDContent.Sheet.IRef)
+//				{
+//					retrieveData.Add(iref.Operand);
+//				}
+//				// Retrieve Block data
+//				foreach (var block in deserializedObject.FBDContent.Sheet.Block)
+//				{
+//					retrieveData.Add(block.Operand);
+//				}
+//				
+//				foreach(var icon in deserializedObject.FBDContent.Sheet.ICon)
+//				{
+//					retrieveData.Add(icon.Name);
+//				}
+//
+//				foreach (var ocon in deserializedObject.FBDContent.Sheet.OCon)
+//				{
+//					retrieveData.Add(ocon.Name);
+//				}
+//
+//				foreach (var aoi in deserializedObject.FBDContent.Sheet.AddOnInstruction)
+//				{
+//					retrieveData.Add(aoi.Operand);
+//				}
+//
+//				foreach (var wire in deserializedObject.FBDContent.Sheet.Wire)
+//				{
+//					retrieveData.Add(wire.ToParam);
+//				}
 
-				foreach (var ocon in deserializedObject.FBDContent.Sheet.OCon)
+				foreach (var oref in deserializedObject.FBDContent.Sheet.ORef)
 				{
-					retrieveData.Add(ocon.Name);
-				}
-
-				foreach (var aoi in deserializedObject.FBDContent.Sheet.AddOnInstruction)
-				{
-					retrieveData.Add(aoi.Operand);
-				}
-
-				foreach (var wire in deserializedObject.FBDContent.Sheet.Wire)
-				{
-					retrieveData.Add(wire.ToParam);
+					retrieveData.Add(oref.Operand);
 				}
 			}
 			//			}
 		}
 
-	}
-	return retrieveData;
+	}	
 }
 
 // https://stackoverflow.com/questions/8373552/serialize-an-object-to-xelement-and-deserialize-it-in-memory 
@@ -141,6 +181,7 @@ public static class Serializer
 		}
 	}
 }
+
 
 // DTO Object Parent Object is Routine
 
@@ -318,4 +359,14 @@ public class Compare
 {
 	public string PreviousData {get;set;}
 	public string LatestData {get;set;}
+}
+
+public class FilePath
+{
+	public FilePath(string Filepath)
+	{
+		this.filepath = Filepath;
+	}
+
+	public string filepath { get; set; }
 }

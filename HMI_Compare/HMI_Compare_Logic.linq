@@ -6,7 +6,7 @@ void Main()
                        new Product { Name = "orange", Code = 4 },
                         new Product { Name = "lemon", Code = 12 } };
 
-Product[] fruits2 = { new Product { Name = "apple", Code = 9 } };
+	Product[] fruits2 = { new Product { Name = "apple", Code = 8 } };
 
 // Method 1
 
