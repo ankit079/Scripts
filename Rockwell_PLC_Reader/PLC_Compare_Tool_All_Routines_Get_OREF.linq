@@ -39,7 +39,7 @@ public void ProcessDirectory(string targetDirectory, FileStream fs, List<FilePat
 	System.IO.DriveInfo di = new System.IO.DriveInfo(targetDirectory);
 	try
 	{
-		var retrieveData = new List<string>();
+		var retrieveData = new List<RetrieveDataCollection>();
 		// Process the list of files found in the directory.
 		string[] fileEntries = Directory.GetFiles(targetDirectory, "*.L5X*");
 		
@@ -59,9 +59,12 @@ public void ProcessDirectory(string targetDirectory, FileStream fs, List<FilePat
 		
 		foreach(var data in retrieveData)
 		{
-			if(data.Contains("_Data."))
+			if(data.ORefData.Contains("_Data."))
 			{
-				Console.WriteLine(data);
+				Console.WriteLine("----------------------");
+				Console.WriteLine(data.RoutineName);
+				Console.WriteLine(data.ORefData);
+				Console.WriteLine("----------------------");
 			}
 		}
 		//retrieveData.Dump();
@@ -81,7 +84,7 @@ private string FilePathFromDesktop(string fileName)
 	return fullName;
 }
 
-private void RetrieveData(string filename, List<String> retrieveData)
+private void RetrieveData(string filename, List<RetrieveDataCollection> retrieveData)
 {
 	//var retrieveData = new List<string>();
 	// Latest File Data
@@ -146,7 +149,8 @@ private void RetrieveData(string filename, List<String> retrieveData)
 
 				foreach (var oref in deserializedObject.FBDContent.Sheet.ORef)
 				{
-					retrieveData.Add(oref.Operand);
+					// https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.list-1.add?view=netframework-4.8
+					retrieveData.Add(new RetrieveDataCollection {ORefData = oref.Operand,RoutineName = routine.Attribute("Name").Value});					
 				}
 			}
 			//			}
@@ -369,4 +373,10 @@ public class FilePath
 	}
 
 	public string filepath { get; set; }
+}
+
+public class RetrieveDataCollection
+{
+	public string ORefData {get;set;}
+	public string RoutineName {get;set;}
 }
