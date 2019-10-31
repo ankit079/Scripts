@@ -2,32 +2,39 @@
 
 void Main()
 {
-	Product[] fruits1 = { new Product { Name = "apple", Code = 9 }, 
-                       new Product { Name = "orange", Code = 4 },
-                        new Product { Name = "lemon", Code = 12 } };
+	Product[] ListofClass1 = { new Product { Name = "apple", Code = 9 },
+					   new Product { Name = "orange", Code = 4 },
+						new Product { Name = "lemon", Code = 12 } };
 
-Product[] fruits2 = { new Product { Name = "apple", Code = 8 } };
+	Product[] ListofClass2 = { new Product { Name = "apple", Code = 8 } };
 
-// Method 1
+	Product singleClass1 = new Product { Name = "apple", Code = 9 };
+	Product singleClass2 = new Product { Name = "apple", Code = 8 };
 
-//Get all the elements from the first array
-//except for the elements from the second array.
+	Console.WriteLine("The class is Product with unique ID {0}", singleClass1.Name);
+	Console.WriteLine("---------------------------------------------------------");
+	PublicInstancePropertiesEqual<Product>(singleClass1, singleClass2);
 
-IEnumerable<Product> except =
-    fruits1.Except(fruits2, new ProductComparer());
+	// Method 1
 
-foreach (var product in except)
-    Console.WriteLine(product.Name + " " + product.Code);
+	//Get all the elements from the first array
+	//except for the elements from the second array.
 
-// Method 2
-	
-//	foreach(var p in fruits1)
-//	{
-//		foreach(var q in fruits2)
-//		{
-//			var result = PublicInstancePropertiesEqual<Product>(p,q);			
-//		}
-//	}
+	//IEnumerable<Product> except =
+	//    fruits1.Except(fruits2, new ProductComparer());
+	//
+	//foreach (var product in except)
+	//    Console.WriteLine(product.Name + " " + product.Code);
+
+	// Method 2
+
+	//	foreach(var p in fruits1)
+	//	{
+	//		foreach(var q in fruits2)
+	//		{
+	//			var result = PublicInstancePropertiesEqual<Product>(p,q);			
+	//		}
+	//	}
 }
 
 // Define other methods and classes here
@@ -51,9 +58,9 @@ class ProductComparer : IEqualityComparer<Product>
 		if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
 			return false;
 		//Check whether the products' properties are equal.
-		return x.Name == y.Name && x.Code == y.Code;	
-	}	
-	
+		return x.Name == y.Name && x.Code == y.Code;
+	}
+
 	// If Equals() returns true for a pair of objects 
 	// then GetHashCode() must return the same value for these objects.
 
@@ -74,30 +81,24 @@ class ProductComparer : IEqualityComparer<Product>
 	}
 }
 
-public static bool PublicInstancePropertiesEqual<T>(T dev, T site) where T : class
+public static void PublicInstancePropertiesEqual<T>(T dev, T site) where T : class
 {
 	if (dev != null && site != null)
 	{
 		Type type = typeof(T);
-		
+
+		string className = type.Name;
+
 		foreach (System.Reflection.PropertyInfo pi in type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
 		{
-				object devValue = type.GetProperty(pi.Name).GetValue(dev, null);
-				object siteValue = type.GetProperty(pi.Name).GetValue(site, null);
+			object devValue = type.GetProperty(pi.Name).GetValue(dev, null);
+			object siteValue = type.GetProperty(pi.Name).GetValue(site, null);
 
-				if (devValue != siteValue && (devValue == null || !devValue.Equals(siteValue)))
-				{
-					Console.WriteLine("Value changed from {0}, {1}",devValue,siteValue);
-				}			
+			if (devValue != siteValue && (devValue == null || !devValue.Equals(siteValue)))
+			{
+				Console.WriteLine("The property {0} value changed from {1} to {2}", pi.Name.ToString(), devValue.ToString(), siteValue.ToString());
+			}
 		}
-		return true;
 	}
-	return dev == site;
 }
 
-public class Report
-{
-	public string ObjectName {get; set;}
-	public string SiteValue {get; set;}
-	public string DevValue	{get; set;}
-}
