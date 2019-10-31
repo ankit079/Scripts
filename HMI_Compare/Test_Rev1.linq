@@ -6,33 +6,28 @@ void Main()
                        new Product { Name = "orange", Code = 4 },
                         new Product { Name = "lemon", Code = 12 } };
 
-Product[] fruits2 = { new Product { Name = "apple", Code = 9 } };
+Product[] fruits2 = { new Product { Name = "apple", Code = 8 } };
 
 // Method 1
 
 //Get all the elements from the first array
 //except for the elements from the second array.
 
-//IEnumerable<Product> except =
-//    fruits1.Except(fruits2, new ProductComparer());
+IEnumerable<Product> except =
+    fruits1.Except(fruits2, new ProductComparer());
 
-//foreach (var product in except)
-//    Console.WriteLine(product.Name + " " + product.Code);
+foreach (var product in except)
+    Console.WriteLine(product.Name + " " + product.Code);
 
 // Method 2
 	
-	foreach(var p in fruits1)
-	{
-		foreach(var q in fruits2)
-		{
-			var result = PublicInstancePropertiesEqual<Product>(p,q,"0");
-			
-			if(result == false)
-			{
-				p.Dump();
-			}
-		}
-	}
+//	foreach(var p in fruits1)
+//	{
+//		foreach(var q in fruits2)
+//		{
+//			var result = PublicInstancePropertiesEqual<Product>(p,q);			
+//		}
+//	}
 }
 
 // Define other methods and classes here
@@ -56,54 +51,53 @@ class ProductComparer : IEqualityComparer<Product>
 		if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
 			return false;
 		//Check whether the products' properties are equal.
-		return x.Name == y.Name && x.Code == y.Code;
-	
-		//Check whether the products' properties are equal.
-		//return x.Code == y.Code && x.Name == y.Name;
-	}
-
-	
+		return x.Name == y.Name && x.Code == y.Code;	
+	}	
 	
 	// If Equals() returns true for a pair of objects 
 	// then GetHashCode() must return the same value for these objects.
 
 	public int GetHashCode(Product product)
 	{
-		return 2;
-//		//Check whether the object is null
-//		if (Object.ReferenceEquals(product, null)) return 0;
-//
-//		//Get hash code for the Name field if it is not null.
-//		int hashProductName = product.Name == null ? 0 : product.Name.GetHashCode();
-//
-//		//Get hash code for the Code field.
-//		int hashProductCode = product.Code.GetHashCode();
-//
-//		//Calculate the hash code for the product.
-//		return hashProductName ^ hashProductCode;
+		//return 2;
+		//Check whether the object is null
+		if (Object.ReferenceEquals(product, null)) return 0;
+
+		//Get hash code for the Name field if it is not null.
+		int hashProductName = product.Name == null ? 0 : product.Name.GetHashCode();
+
+		//Get hash code for the Code field.
+		int hashProductCode = product.Code.GetHashCode();
+
+		//Calculate the hash code for the product.
+		return hashProductName ^ hashProductCode;
 	}
 }
 
-public static bool PublicInstancePropertiesEqual<T>(T self, T to, params string[] ignore) where T : class
+public static bool PublicInstancePropertiesEqual<T>(T dev, T site) where T : class
 {
-	if (self != null && to != null)
+	if (dev != null && site != null)
 	{
 		Type type = typeof(T);
-		List<string> ignoreList = new List<string>(ignore);
+		
 		foreach (System.Reflection.PropertyInfo pi in type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
 		{
-			if (!ignoreList.Contains(pi.Name))
-			{
-				object selfValue = type.GetProperty(pi.Name).GetValue(self, null);
-				object toValue = type.GetProperty(pi.Name).GetValue(to, null);
+				object devValue = type.GetProperty(pi.Name).GetValue(dev, null);
+				object siteValue = type.GetProperty(pi.Name).GetValue(site, null);
 
-				if (selfValue != toValue && (selfValue == null || !selfValue.Equals(toValue)))
+				if (devValue != siteValue && (devValue == null || !devValue.Equals(siteValue)))
 				{
-					return false;
-				}
-			}
+					Console.WriteLine("Value changed from {0}, {1}",devValue,siteValue);
+				}			
 		}
 		return true;
 	}
-	return self == to;
+	return dev == site;
+}
+
+public class Report
+{
+	public string ObjectName {get; set;}
+	public string SiteValue {get; set;}
+	public string DevValue	{get; set;}
 }
