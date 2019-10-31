@@ -11,111 +11,75 @@
 
 void Main()
 {
-	RetrieveSiteFileData();
-	// Compare Logic between two files
+	var siteData = RetrieveSiteFileData();
+	var devData = RetrieveDevFileData();
+	foreach(var siteLine in siteData.Line)
+	{
+		foreach(var devLine in devData.Line)
+		{
+			if(siteLine.Name == devLine.Name)
+			{				
+				string objectName = siteLine.Name;
+				PublicInstancePropertiesEqual<Line>(devLine,siteLine,objectName);
+			}					
+		}
+	}
 
-	//	var difference1 = RetrieveLatestFileData().Except(RetrievePreviousFileData()).ToList();
-	//	var difference2 = RetrievePreviousFileData().Except(RetrieveLatestFileData()).ToList();
-	//	Console.WriteLine("Comparing the latest file with the previous file for difference");
-	//	difference1.Dump();
-	//	if(difference1 != null)
-	//	{
-	//		// Do Something with IRef ID to find the corelation
-	//		
-	//	}
-	//	Console.WriteLine("Comparing the previous file with the latest file for difference");
-	//	difference2.Dump();
+	foreach (var siteText in siteData.Text)
+	{
+		foreach (var devText in devData.Text)
+		{
+			if (siteText.Name == devText.Name)
+			{
+				string objectName = siteText.Name;
+				PublicInstancePropertiesEqual<Text>(devText, siteText, objectName);
+			}
+		}
+	}	
 }
 
-//public static PropertyInfo[] getPropertyInfo()
-//{
-//	string [] properties;
-//	// Refer to https://stackoverflow.com/questions/13985261/dynamically-access-class-and-its-property-in-c-sharp
-//	// get all public static properties of MyClass type
-////	PropertyInfo[] propertyInfos;
-////	propertyInfos = typeof(DisplaySettings).GetProperties();
-//	// sort properties by name
-////	Array.Sort(propertyInfos,
-////			delegate (PropertyInfo propertyInfo1, PropertyInfo propertyInfo2)
-////			{ return propertyInfo1.Name.CompareTo(propertyInfo2.Name); });
-//
-//	// write property names
-////	foreach (PropertyInfo propertyInfo in propertyInfos)
-////	{
-////		Console.WriteLine(propertyInfo.Name);
-////	}
-//	return propertyInfos;
-//}
-
-public void RetrieveData(string filename)
+public Gfx RetrieveData(string filename)
 {
 	var retrievedData = new List<String>();
 	string xmlFile = FilePathFromDesktop(filename);
 	XElement config = XElement.Load(xmlFile);
-
-	var deserializedObject = Deserializer.FromXElement<Gfx>(config);
-
-	foreach (var grp in deserializedObject.Group)
-	{
-		grp.Name.Dump();
-	}
-	deserializedObject.Dump();
-
-	//	var result = (
-	//			from c in config.DescendantNodes().OfType<XElement>()
-	//			where c.Name == "Program"
-	//			select c
-	//				);
-	//
-	//	foreach (XElement e in result)
-	//	{
-	//		if (e.FirstAttribute.Value == "DutyControl")
-	//		{
-	//			var selectedProgram = e;
-	//			var routines = (
-	//		from c in selectedProgram.DescendantNodes().OfType<XElement>()
-	//		where c.Name == "Routine"
-	//		select c
-	//			);
-	//
-	//			foreach (var routine in routines)
-	//			{
-	//				if (routine.FirstAttribute.Value == "PP1500002ABVSD_Duty")
-	//				{
-	//					routine.Dump();
-	//					var deserializedObject = Deserializer.FromXElement<Routine>(routine);
-	//
-	//					// Retrieve IREF data
-	//					foreach (var iref in deserializedObject.FBDContent.Sheet.IRef)
-	//					{
-	//						retrievedData.Add(iref.Operand);
-	//					}
-	//					// Retrieve Block data
-	//					foreach (var block in deserializedObject.FBDContent.Sheet.Block)
-	//					{
-	//						retrievedData.Add(block.Operand);
-	//					}
-	//				}
-	//			}
-	//		}
-	//
-	//	}
-	//	return retrievedData;
+	var deserializedGfxObject = Deserializer.FromXElement<Gfx>(config);
+	return deserializedGfxObject;
 }
 
-public void RetrieveSiteFileData()
+public void PublicInstancePropertiesEqual<T>(T dev, T site, string objectName) where T : class
 {
-	// Retrieve Latest File Data
-	string filename = @"LoadXML\HMI_Compare_Tool\1310_Pyro_Acid_Roast_Kiln_Site.xml";
-	RetrieveData(filename);
+	if (dev != null && site != null)
+	{
+		Type type = typeof(T);
+
+		foreach (System.Reflection.PropertyInfo pi in type.GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+		{
+			object devValue = type.GetProperty(pi.Name).GetValue(dev, null);
+			object siteValue = type.GetProperty(pi.Name).GetValue(site, null);
+
+			if (devValue != siteValue && (devValue == null || !devValue.Equals(siteValue)))
+			{
+				Console.WriteLine(objectName.ToString());
+				Console.WriteLine("The property {0} value changed from {1} to {2}", pi.Name.ToString(), devValue.ToString(), siteValue.ToString());
+			}
+		}
+	}
 }
 
-//public List<String> RetrievePreviousFileData()
-//{	
-//	// Retrieve Previous File Data
-//	string filename = @"LoadXML\PLC_Compare_Tool\HYDR1A_BHG_20191003.L5X";
-//	return RetrieveData(filename);
-//}
+public Gfx RetrieveSiteFileData()
+{
+	// Retrieve Site File Data
+	string filename = @"LoadXML\HMI_Compare_Tool\1310_Pyro_Acid_Roast_Kiln_Site.xml";
+	return RetrieveData(filename);
+}
+
+public Gfx RetrieveDevFileData()
+{	
+	// Retrieve Dev File Data
+	string filename = @"LoadXML\HMI_Compare_Tool\1310_Pyro_Acid_Roast_Kiln_Dev.xml";
+	return RetrieveData(filename);
+}
 
 // Read from desktop a perticular file
 private string FilePathFromDesktop(string fileName)
@@ -237,8 +201,8 @@ public class Text
 	[XmlAttribute(AttributeName = "alignment")]
 	public string Alignment { get; set; }
 	[XmlAttribute(AttributeName = "fontFamily")]
-	public string FontFamily { get; set; }
-	[XmlAttribute(AttributeName = "fontSize")]
+//	public string FontFamily { get; set; }
+//	[XmlAttribute(AttributeName = "fontSize")]
 	public string FontSize { get; set; }
 	[XmlAttribute(AttributeName = "bold")]
 	public string Bold { get; set; }
