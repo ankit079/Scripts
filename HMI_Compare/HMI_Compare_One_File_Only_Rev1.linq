@@ -1,6 +1,6 @@
 <Query Kind="Program">
   <Connection>
-    <ID>d372e4f0-e238-464f-bc05-a7bb61d8c055</ID>
+    <ID>e0e1a2f9-3e46-474d-8a95-a03f59555e6e</ID>
     <Persist>true</Persist>
     <Server>(localdb)\MSSQLLocalDB</Server>
     <Database>master</Database>
@@ -70,14 +70,14 @@ public void PublicInstancePropertiesEqual<T>(T dev, T site, string objectName) w
 public Gfx RetrieveSiteFileData()
 {
 	// Retrieve Site File Data
-	string filename = @"LoadXML\HMI_Compare_Tool\1310_Pyro_Acid_Roast_Kiln_Site.xml";
+	string filename = @"Control Systems\LoadXML\HMI_Compare_Tool\1310_Pyro_Acid_Roast_Kiln_Site.xml";
 	return RetrieveData(filename);
 }
 
 public Gfx RetrieveDevFileData()
 {	
 	// Retrieve Dev File Data
-	string filename = @"LoadXML\HMI_Compare_Tool\1310_Pyro_Acid_Roast_Kiln_Dev.xml";
+	string filename = @"Control Systems\LoadXML\HMI_Compare_Tool\1310_Pyro_Acid_Roast_Kiln_Dev.xml";
 	return RetrieveData(filename);
 }
 
@@ -681,7 +681,7 @@ public class Group
 	[XmlElement(ElementName = "rectangle")]
 	public List<Rectangle> Rectangle { get; set; }
 	[XmlElement(ElementName = "group")]
-	public List<Group> Grp { get; set; }
+	public List<Group> InnerGroup { get; set; }
 	[XmlElement(ElementName = "image")]
 	public List<Image> Image { get; set; }
 	[XmlElement(ElementName = "multistateIndicator")]
