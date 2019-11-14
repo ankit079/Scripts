@@ -6,15 +6,15 @@ void Main()
 	List<int> i = new List<int>();
 	i.Add(2);
 	i.Add(4);
-	if(checkType(i))
+	System.Type type = i.GetType();
+	if(checkType(type))
 	{
 		Console.WriteLine("List object to be processed");
 	}
 }
 
-public bool checkType(object i)
-{
-	System.Type type = i.GetType();
+public bool checkType(Type type)
+{	
 	//System.Console.WriteLine(type);
 
 	if (type.FullName.Contains("System.Collections"))
