@@ -65,9 +65,10 @@ private void convertToPDF(string sourcePath, string destPath)
 	page.Orientation = PageOrientation.Landscape;
 	page.Width = image.PointWidth;
 	page.Height = image.PointHeight;	
+	page.Size = PageSize.A3;
 	//page.Size = PageSize.A3;
-	XRect box = new XRect(0,0,page.Width/2,page.Height/2);
-	gfx.DrawImage(image, 0, 0);
+	XRect box = new XRect(0,0,page.Width,page.Height);
+	gfx.DrawImage(image,box);
 	s_document.Save(destPath);
 }
 
@@ -95,5 +96,3 @@ private string[] getFilePaths()
 	}
 	return dirs;
 }
-
-
